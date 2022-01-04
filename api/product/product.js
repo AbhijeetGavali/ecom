@@ -77,6 +77,15 @@ router.post(
     }
   }
 );
-
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    let productId = req.params.id;
+    let responce = await Product.findByIdAndDelete(productId);
+    return res.status(200).json({ responce });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send("Internal Server Error");
+  }
+});
 // exporting the module
 module.exports = router;
