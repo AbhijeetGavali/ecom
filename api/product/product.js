@@ -77,6 +77,61 @@ router.post(
     }
   }
 );
+
+router.put("/:id", async (req, res) => {
+  try {
+    if (req.body.actualPrice <= req.body.discountPrice) {
+      return res.status(400).json({ message: "Discount is not valid" });
+    }
+
+    let productId = req.params.id;
+    const product = await Product.findById(productId);
+    let data = product
+      ? {
+          id: product.id,
+          photos: product.productUrl.map((url) => url),
+          name: product.productName,
+          description: product.productDescription,
+          actualPrice: product.actualPrice,
+          discountPrice: product.discountPrice,
+          collection: product.collections,
+          type: product.type,
+          size: product.size ? product.size.map((siz) => siz) : [""],
+        }
+      : "Not Found";
+    if (data == "Not Found") {
+      return res.status(404).send(data);
+    }
+
+    let updatedData = {
+      productUrl: req.body.photos
+        ? req.body.photos.map((url) => url)
+        : data.photos.map((url) => url),
+      productName: req.body.name ? req.body.name : data.name,
+      productDescription: req.body.description
+        ? req.body.description
+        : data.description,
+      actualPrice: req.body.actualPrice
+        ? req.body.actualPrice
+        : data.actualPrice,
+      discountPrice: req.body.discountPrice
+        ? req.body.discountPrice
+        : data.discountPrice,
+      collections: req.body.collection ? req.body.collection : data.collection,
+      type: req.body.type ? req.body.type : data.type,
+      size: req.body.size
+        ? req.body.size.map((siz) => siz)
+        : data.size.map((siz) => siz),
+    };
+
+    let updateProduct = await Product.findByIdAndUpdate(productId, updatedData);
+    return res.json({ createrd: updateProduct.id });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send("Internal Server Error");
+  }
+});
+
 router.delete("/delete/:id", async (req, res) => {
   try {
     let productId = req.params.id;
